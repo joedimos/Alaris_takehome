@@ -1,4 +1,4 @@
-# Academic Paper Knowledge Graph System
+# Academic Paper KG 
 
 ## Overview
 
