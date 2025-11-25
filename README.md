@@ -1,4 +1,3 @@
-[README.md](https://github.com/user-attachments/files/23752703/README.md)
 # Academic Paper Knowledge Graph System
 
 ## Overview
