@@ -55,3 +55,14 @@ CREATE INDEX IF NOT EXISTS idx_rel_source ON relationships(source_type, source_i
 CREATE INDEX IF NOT EXISTS idx_rel_target ON relationships(target_type, target_id);
 CREATE INDEX IF NOT EXISTS idx_pc_paper ON paper_concepts(paper_id);
 CREATE INDEX IF NOT EXISTS idx_pc_concept ON paper_concepts(concept_id);
+
+
+-- Update the papers table to have better defaults
+ALTER TABLE papers 
+ALTER COLUMN authors SET DEFAULT '{}',
+ALTER COLUMN categories SET DEFAULT '{}';
+
+-- Ensure the columns are not null
+ALTER TABLE papers 
+ALTER COLUMN authors SET NOT NULL,
+ALTER COLUMN categories SET NOT NULL;
