@@ -10,7 +10,6 @@ An agentic system that constructs semantic knowledge graphs from academic papers
 -  **Graph Database**: PostgreSQL with optimized schema for graph traversal
 -  **Semantic Relationships**: Beyond citations - captures "improves_on", "extends", "introduces"
 -  **Validation**: Multi-layer quality checks with confidence scoring
--  **Scalable**: Clear path from 50 papers to 1M+ papers
 
 ## Quick Start
 
