@@ -41,7 +41,7 @@ export class ArxivClient {
     }
   }
 
-  async searchPapers(query: string, maxResults: number = 10): Promise<ArxivPaper[]> {
+  async searchPapers(query: string, maxResults: number = 50): Promise<ArxivPaper[]> {
     try {
       console.log(`   Searching arXiv for: "${query}"`);
       
