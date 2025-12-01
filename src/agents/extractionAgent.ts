@@ -9,12 +9,12 @@ export class ExtractionAgent {
       throw new Error('VALID Mistral API key REQUIRED. Get one from: https://console.mistral.ai/');
     }
     this.apiKey = apiKey;
-    console.log('   ExtractionAgent initialized ');
+    console.log('   ExtractionAgent initialized (REAL Mistral AI ONLY)');
   }
 
   // Extract entities from a single paper
   async extractEntities(paper: Paper): Promise<ExtractionResult> {
-    console.log(`   Analyzing paper with Mistral AI...`);
+    console.log(`   Analyzing paper with REAL Mistral AI...`);
     
     const prompt = this.buildAnalysisPrompt(paper);
     const response = await this.callMistralAPI(prompt);
@@ -35,12 +35,12 @@ export class ExtractionAgent {
       
       try {
         const extraction = await this.extractEntities(paper);
-        results.set(paper.id, extraction);
+        results.set(paper.arxiv_id, extraction);
         console.log(`   ✓ Successfully extracted from paper ${i + 1}`);
       } catch (error: any) {
         console.error(`   ✗ Failed to extract from paper ${i + 1}: ${error.message}`);
         // Store empty result to maintain consistency
-        results.set(paper.id, {
+        results.set(paper.arxiv_id, {
           concepts: [],
           methods: [],
           datasets: [],
@@ -73,11 +73,11 @@ export class ExtractionAgent {
       const batchPromises = batch.map(async (paper) => {
         try {
           const extraction = await this.extractEntities(paper);
-          return { paperId: paper.id, extraction, success: true };
+          return { paperId: paper.arxiv_id, extraction, success: true };
         } catch (error: any) {
           console.error(`   ✗ Failed to extract from "${paper.title}": ${error.message}`);
           return { 
-            paperId: paper.id, 
+            paperId: paper.arxiv_id, 
             extraction: {
               concepts: [],
               methods: [],
