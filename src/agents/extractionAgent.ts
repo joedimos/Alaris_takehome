@@ -9,11 +9,12 @@ export class ExtractionAgent {
       throw new Error('VALID Mistral API key REQUIRED. Get one from: https://console.mistral.ai/');
     }
     this.apiKey = apiKey;
-    console.log('   ExtractionAgent initialized (REAL Mistral AI ONLY)');
+    console.log('   ExtractionAgent initialized ');
   }
 
+  // Extract entities from a single paper
   async extractEntities(paper: Paper): Promise<ExtractionResult> {
-    console.log(`   Analyzing paper with REAL Mistral AI...`);
+    console.log(`   Analyzing paper with Mistral AI...`);
     
     const prompt = this.buildAnalysisPrompt(paper);
     const response = await this.callMistralAPI(prompt);
@@ -21,6 +22,88 @@ export class ExtractionAgent {
     
     console.log(`   AI extraction completed: ${extraction.concepts.length} concepts, ${extraction.relationships.length} relationships`);
     return extraction;
+  }
+
+  // Extract entities from multiple papers
+  async extractEntitiesFromMultiplePapers(papers: Paper[]): Promise<Map<string, ExtractionResult>> {
+    console.log(`\n   Starting batch extraction for ${papers.length} papers...`);
+    const results = new Map<string, ExtractionResult>();
+    
+    for (let i = 0; i < papers.length; i++) {
+      const paper = papers[i];
+      console.log(`\n   [${i + 1}/${papers.length}] Processing: "${paper.title}"`);
+      
+      try {
+        const extraction = await this.extractEntities(paper);
+        results.set(paper.id, extraction);
+        console.log(`   ✓ Successfully extracted from paper ${i + 1}`);
+      } catch (error: any) {
+        console.error(`   ✗ Failed to extract from paper ${i + 1}: ${error.message}`);
+        // Store empty result to maintain consistency
+        results.set(paper.id, {
+          concepts: [],
+          methods: [],
+          datasets: [],
+          metrics: [],
+          relationships: []
+        });
+      }
+      
+      // Add delay between papers to avoid rate limiting
+      if (i < papers.length - 1) {
+        console.log(`   Waiting 1s before next paper...`);
+        await this.sleep(1000);
+      }
+    }
+    
+    console.log(`\n   Batch extraction complete: ${results.size}/${papers.length} papers processed`);
+    return results;
+  }
+
+  // Extract entities from multiple papers in parallel (faster but may hit rate limits)
+  async extractEntitiesInParallel(papers: Paper[], concurrency: number = 3): Promise<Map<string, ExtractionResult>> {
+    console.log(`\n   Starting parallel extraction for ${papers.length} papers (concurrency: ${concurrency})...`);
+    const results = new Map<string, ExtractionResult>();
+    
+    // Process papers in batches
+    for (let i = 0; i < papers.length; i += concurrency) {
+      const batch = papers.slice(i, i + concurrency);
+      console.log(`\n   Processing batch ${Math.floor(i / concurrency) + 1} (papers ${i + 1}-${Math.min(i + concurrency, papers.length)})...`);
+      
+      const batchPromises = batch.map(async (paper) => {
+        try {
+          const extraction = await this.extractEntities(paper);
+          return { paperId: paper.id, extraction, success: true };
+        } catch (error: any) {
+          console.error(`   ✗ Failed to extract from "${paper.title}": ${error.message}`);
+          return { 
+            paperId: paper.id, 
+            extraction: {
+              concepts: [],
+              methods: [],
+              datasets: [],
+              metrics: [],
+              relationships: []
+            },
+            success: false
+          };
+        }
+      });
+      
+      const batchResults = await Promise.all(batchPromises);
+      batchResults.forEach(result => {
+        results.set(result.paperId, result.extraction);
+      });
+      
+      // Add delay between batches
+      if (i + concurrency < papers.length) {
+        console.log(`   Waiting 2s before next batch...`);
+        await this.sleep(2000);
+      }
+    }
+    
+    console.log(`\n   Parallel extraction complete: ${results.size}/${papers.length} papers processed`);
+    return results;
   }
 
   private buildAnalysisPrompt(paper: Paper): string {
