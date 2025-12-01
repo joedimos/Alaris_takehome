@@ -18,7 +18,7 @@ export class PipelineOrchestrator {
   private readonly MIN_CONFIDENCE_THRESHOLD = 0.7;
 
   constructor(mistralApiKey: string, dbUrl: string) {
-    console.log('🤖 Initializing Agentic Knowledge Graph System...');
+    console.log('Initializing Agentic Knowledge Graph System...');
     
     this.db = new DatabaseClient(dbUrl);
     this.arxivAgent = new ArxivAgent();
